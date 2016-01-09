@@ -15,7 +15,7 @@ wq = queue.Queue()
 
 
 # Thread Launcher
-def launchThreads(numthreads):
+def launch_threads(numthreads):
     # Enqueing Stuff
     with open(args.file, "r") as ipsfile:
         for ip in ipsfile:
@@ -30,25 +30,23 @@ def launchThreads(numthreads):
 
 # Thread
 def tRun():
-    global wq
-    global resultList
     while not wq.empty():
         ip = wq.get().rstrip()
         #print str(ip)
         try:
-            ret = requests.get('http://['+str(ip)+']/nodeinfo.json', allow_redirects=False, timeout=2)
+            ret = requests.get('http://['+str(ip)+']/nodeinfo.json', allow_redirects=False,
+                               timeout=2)
             if ret.status_code == 200:
                 print("%s/nodeinfo.json Exists!" % (ip))
                 try:
                     f = open('nis.log', 'a+')
                     f.write(str(ip) + "\n")
                     f.close()
-                except all as ex:
+                except Exception as ex:
                     print(str(ex))
-                pass
             else:
                 pass
-        except:
+        except Exception:
             pass
     return
 
@@ -61,6 +59,6 @@ if __name__ == '__main__':
 
     # Run scans, die properly on CTRL-C
     try:
-        launchThreads(numthreads)
+        launch_threads(numthreads)
     except KeyboardInterrupt as ex:
         sys.exit(0)

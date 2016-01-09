@@ -1,24 +1,19 @@
 import requests
 import socket
 from jinja2 import Environment, FileSystemLoader
-import json
-
-env = Environment(loader=FileSystemLoader('templates'))
-nips = []
 
 
 def scan_ip(ip):
     try:
-        ni = requests.get('http://['+ip.rstrip()+']/nodeinfo.json', timeout=3).json()
-        ni.update({'appendedip':ip.rstrip()})
-        return ni
+        nodeinfo = requests.get('http://['+ip.rstrip()+']/nodeinfo.json', timeout=3).json()
+        nodeinfo.update({'appendedip': ip.rstrip()})
+        return nodeinfo
     except requests.exceptions.Timeout as ex:
         print(str(ip.rstrip()) + " connection timed out")
     except socket.timeout as ex:
         print(str(ip.rstrip()) + " connection timed out")
     except ValueError as ex:
         print(str(ip.rstrip()) + " does not have a valid nodeinfo.json")
-        nips.append(ip.rstrip())
     except AttributeError as ex:
         print(str(ip.rstrip()) + " AttributeError")
     except requests.exceptions.RequestException as ex:
@@ -36,6 +31,7 @@ if __name__ == '__main__':
                         default='static')
     parser.add_argument('file', type=str, help='list of ip addresses')
     args = parser.parse_args()
+    env = Environment(loader=FileSystemLoader('templates'))
     template = env.get_template('creep.html')
     nodes = []
     with open(args.file, "r") as ipsfile:
@@ -47,7 +43,7 @@ if __name__ == '__main__':
                     if 'name' in node['contact']:
                         nodes.append(node)
                         added = True
-                if 'services' in node and added == False:
+                if 'services' in node and added is False:
                     nodes.append(node)
     with open(args.out, 'w') as output:
         output.write(template.render(title='Creep', nodes=nodes, static=args.static))
