@@ -19,6 +19,15 @@ def scan_ip(ip, favicon_path):
         print("Requesting %s" % url)
         ni = requests.get(url, timeout=3, headers=headers, allow_redirects=False).json()
         ni.update({'appendedip': ip.rstrip()})
+        favicon = requests.get("http://[%s]/favicon.ico" % ip, headers=headers,
+                               allow_redirects=False, stream=True)
+        if favicon.ok:
+            with open("%s/%s.ico" % (favicon_path, ip), 'wb') as f:
+                for chunk in favicon.iter_content(1024):
+                    f.write(chunk)
+                print("Got a favicon for %s" % ip)
+        else:
+            print("No favicon for %s" % ip)
         return ni
     except requests.exceptions.Timeout as ex:
         print(str(ip.rstrip()) + " connection timed out")
